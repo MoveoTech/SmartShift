@@ -1,0 +1,87 @@
+body {
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+}
+
+.App {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #191B32;
+}
+.container, .container-sm {
+    max-width: 65%;
+}
+.container > h2{
+    font-style: normal;
+    font-weight: normal;
+    font-size: 17.705px;
+    line-height: 21px;
+    
+    color: #FFFFFF;
+}
+form {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  width: 75%;
+  margin: auto;
+}
+.input-group {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  width: 100%;
+  border: 1px solid #E2E2E2;
+  height: 68px;
+  padding: 15px 15px 15px 15px;
+}
+.role_group {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  width: 100%;
+  border: 1px solid #E2E2E2;
+  padding: 15px 15px 15px 15px;
+}
+.role{
+  border: 0px solid #E2E2E2;
+}
+.btn-primary {
+  color: #fff;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  margin-top: 30px;
+}
+.input-group>.form-control, .input-group>.form-select {
+  position: relative;
+  flex: 1 1 auto;
+  width: 155px;
+  height: 37px;
+  min-width: 0;
+  background: #E8F4FE;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14.0598px;
+  text-align: center;
+  color: #3171E2;
+}
+.form-label {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14.0598px;
+  line-height: 16px;
+  color: #FFFFFF;
+  margin: 10px 35px 9px 4px;
+}
+
+b{
+  margin: auto 10px;
+  font-size: 25px;
+}
