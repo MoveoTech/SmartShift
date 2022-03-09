@@ -67,7 +67,7 @@ function ManagerForm() {
     var original = document.getElementById("role");
     console.log(original)
     var clone = original.cloneNode(true); // "deep" clone
-    clone.id = "role" ; // there can only be one element with an ID
+    // clone.id = "role" + 1; // there can only be one element with an ID
     original.parentNode.appendChild(clone);
   };
 
@@ -106,16 +106,17 @@ function ManagerForm() {
 
         <Form.Group className="role_group">
         <Form.Label>Role</Form.Label>
+        <div id="select-wrapper" className="select-wrapper">
           <InputGroup className="role" id="role">
-      
-            <div id="select-wrapper" class="select-wrapper">
+
               <Form.Select
                 id="roles"
                 required
                 aria-label="Default select example"
-                onChange={(event) => {
+                        onChange={(event) => {
                     const newRole = [...newItem.role];
                     newRole.push(event.target.value);
+                    console.log(newRole)
                   setNewItem({ ...newItem, role: newRole});
                 }}
               >
@@ -126,14 +127,15 @@ function ManagerForm() {
               </Form.Select>
            
             <Form.Control id="number" required type="number" defaultValue={1} />
-            </div>
+      
           </InputGroup>
-
-        </Form.Group>
-        <button className="" onClick={addSelect}>
+          </div>
+          <button className="addRole" onClick={addSelect}>
             {" "}
             + Add Role
           </button>
+        </Form.Group>
+
         <InputGroup>
           <Form.Label>Date</Form.Label>
           <Form.Control
@@ -155,7 +157,7 @@ function ManagerForm() {
               setNewItem({ ...newItem, shift: event.target.value });
             }}
           >
-            <option selected value="Morning">
+            <option defaultValue value="Morning">
               Morning
             </option>
             <option value="Evening">Evening</option>

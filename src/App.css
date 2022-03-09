@@ -42,16 +42,19 @@ form {
   padding: 15px 15px 15px 15px;
 }
 .role_group {
-  position: relative;
+  /* position: relative;
   display: flex;
   flex-wrap: wrap;
-  align-items: stretch;
+  align-items: stretch; */
   width: 100%;
   border: 1px solid #E2E2E2;
-  padding: 15px 15px 15px 15px;
+  padding: 15px 15px 15px 15px; 
 }
 .role{
   border: 0px solid #E2E2E2;
+  float: right;
+  padding-right: 0px;
+  width: 85%;
 }
 .btn-primary {
   color: #fff;
@@ -91,10 +94,10 @@ b{
   background-color: #191B32;
   border: none;
 }
-#number{
+/* #number{
   width: 40%;
 }
 .select-wrapper{
   display: flex;
   width: 75%;
-}
+} */
