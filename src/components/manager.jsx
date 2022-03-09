@@ -1,173 +1,166 @@
 import React from "react";
 import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
-import InputGroup from "react-bootstrap/InputGroup";
 import "antd/dist/antd.css";
-import { useState } from "react";
 import mondaySdk from "monday-sdk-js";
-import { useEffect } from "react";
+import init from "monday-sdk-js";
+const axios = require("axios");
+
+const ACCESS_TOKEN =
+  "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjE0OTQxMzU2NywidWlkIjoyNzY4NjQxMywiaWFkIjoiMjAyMi0wMy0wN1QxMzo1ODo1OC4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTEwMjMyOCwicmduIjoidXNlMSJ9.nv5EkOYruDh2KcuEH5ySf2Bb8kCnnZShfj0ouF6bm4Q";
 
 function ManagerForm() {
-  const fetch = require("node-fetch");
+  const employeesAvail = [];
+  let shifts = {};
+  let globalBoardId;
+  let globalItemId;
 
-  const [newItem, setNewItem] = useState({
-    id: "",
-    // name: "",
-    department: "",
-    role: [],
-    date: "",
-    shift: "Morning",
-    person: [],
-  });
+  const init = () => {
+    mondayContext();
+    fetchBoards();
+  };
 
-  useEffect(() => {
-    const monday = mondaySdk();
-    monday.listen("context", (res) => {
-      setNewItem({ ...newItem, id: res.data.itemId });
-    });
-  }, []);
+  const fetchBoards = async () => {
+    let availBoardId;
 
-  // let query= `query{ boards(ids:2382298614){items (ids: ${newItem.id}) { name} } }`
-  // let name= fetch ("https://api.monday.com/v2", {
-  //   method: 'post',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //     'Authorization' : "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjE0OTQxMzU2NywidWlkIjoyNzY4NjQxMywiaWFkIjoiMjAyMi0wMy0wN1QxMzo1ODo1OC4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTEwMjMyOCwicmduIjoidXNlMSJ9.nv5EkOYruDh2KcuEH5ySf2Bb8kCnnZShfj0ouF6bm4Q",
+    const endpoint = "https://api.monday.com/v2";
+    const headers = {
+      "content-type": "application/json",
+      Authorization: `${ACCESS_TOKEN}`,
+    };
+    const graphqlQuery = {
+      operationName: "fetchAuthor",
+      query: `query{ boards {id name}}`,
+      variables: {},
+    };
 
-  //    },
-  //    body: JSON.stringify({
-  //      query : query
-  //    })
-  //   })
-  //    .then(res => res.json())
-  //    .then(res => console.log(JSON.stringify(res, null, 2)));
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log(newItem);
-
-    var updateItem = `mutation {change_multiple_column_values (item_id: ${newItem.id}, board_id: 2382298614, column_values: \"{\\\"department8\\\": {\\\"label\\\":\\\"${newItem.department}\\\"},\\\"shift\\\": {\\\"label\\\":\\\"${newItem.shift}\\\"},\\\"dropdown\\\":\\\"${newItem.role}\\\",\\\"date4\\\": {\\\"date\\\":\\\"${newItem.date}\\\"}}\") {id}}`;
-
-    fetch("https://api.monday.com/v2", {
+    const response = await axios({
+      url: endpoint,
       method: "post",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization:
-          "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjE0OTQxMzU2NywidWlkIjoyNzY4NjQxMywiaWFkIjoiMjAyMi0wMy0wN1QxMzo1ODo1OC4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTEwMjMyOCwicmduIjoidXNlMSJ9.nv5EkOYruDh2KcuEH5ySf2Bb8kCnnZShfj0ouF6bm4Q",
-      },
-      body: JSON.stringify({
-        query: updateItem,
+      headers: headers,
+      data: graphqlQuery,
+    });
+
+    availBoardId = response.data.data.boards.find(
+      (board) => board.name === "Availability"
+    ).id;
+    fetchAvailBoard(availBoardId);
+    fetchShifts();
+  };
+
+  const fetchAvailBoard = async (board_id) => {
+    const endpoint = "https://api.monday.com/v2";
+    const headers = {
+      "content-type": "application/json",
+      Authorization: `${ACCESS_TOKEN}`,
+    };
+    const graphqlQuery = {
+      operationName: "fetchAuthor",
+      query: `{boards(ids: ${board_id}) {groups {id title items (limit: 15) {id name column_values {id title text value}}}}}`,
+      variables: {},
+    };
+
+    const response = await axios({
+      url: endpoint,
+      method: "post",
+      headers: headers,
+      data: graphqlQuery,
+    });
+console.log(response.data)
+    response.data.data.boards[0].groups.forEach((group) => {
+      group.items.forEach((item) => {
+        employeesAvail.push({
+          personId: item.column_values[0].value,
+          name: item.column_values[0].text,
+          date: item.column_values[1].text,
+          shift: item.column_values[2].text,
+        });
+      });
+    });
+
+    console.log(employeesAvail);
+  };
+
+  const mondayContext = () => {
+    const monday = mondaySdk();
+    monday.listen("context", async (res) => {
+      globalItemId = res.data.itemId;
+      globalBoardId = res.data.boardId;
+    });
+  };
+
+  const fetchShifts = async () => {
+    const endpoint = "https://api.monday.com/v2";
+    const headers = {
+      "content-type": "application/json",
+      Authorization: `${ACCESS_TOKEN}`,
+    };
+    const graphqlQuery = {
+      operationName: "fetchAuthor",
+      query: `query{ boards(ids:${globalBoardId}){items (ids: ${globalItemId}) {id name column_values {id title text}}} }`,
+      variables: {},
+    };
+
+    const response = await axios({
+      url: endpoint,
+      method: "post",
+      headers: headers,
+      data: graphqlQuery,
+    });
+
+    console.log(response.data); // data
+
+    response.data.data.boards[0].items.forEach((item) => {
+      shifts={
+        date: item.column_values[2].text,
+        shift: item.column_values[3].text.split(","),
+      };
+    });
+    console.log(shifts);
+  };
+
+  const generateEmployees = async() => {
+    let date=shifts.date;
+    let shift= shifts.shift[0];
+
+    let person=employeesAvail.filter(employee=> employee.date===date && employee.shift===shift)
+    // console.log(person[0].personId)
+    // let personId = person[0].personId;
+    // let id = personId.substring(personId.indexOf("id") + 4);
+    // const myArray = id.slice( 0, 8);
+    // console.log(myArray); // gmail.com
+
+
+    const endpoint = "https://api.monday.com/v2";
+    const headers = {
+      "content-type": "application/json",
+      Authorization: `${ACCESS_TOKEN}`,
+    };
+
+    const graphqlQuery = {
+      operationName: "fetchAuthor",
+      query: "mutation ($myBoardId:Int!, $myItemId:Int!, $myColumnValues:JSON!) { change_multiple_column_values(item_id:$myItemId, board_id:$myBoardId, column_values: $myColumnValues) { id }}",
+      variables: JSON.stringify({
+        myBoardId: globalBoardId,
+        myItemId: globalItemId,
+        myColumnValues:"{\"person\": {\"personAndTeams\": [{\"id\": 27595764, \"kind\": \"person\"}, {\"id\": 27595795, \"kind\": \"person\"}, {\"id\": 27595879, \"kind\": \"person\"}]}}"
       }),
-    })
-      .then((res) => res.json())
-      .then((res) => console.log(JSON.stringify(res, null, 2)));
-  };
+    };
 
-  const addSelect = () => {
-    var original = document.getElementById("role");
-    console.log(original)
-    var clone = original.cloneNode(true); // "deep" clone
-    // clone.id = "role" + 1; // there can only be one element with an ID
-    original.parentNode.appendChild(clone);
-  };
+    const response = await axios({
+      url: endpoint,
+      method: "post",
+      headers: headers,
+      data: graphqlQuery,
+    });
 
+    console.log(response.data)
+  }
+
+
+  init();
   return (
     <div className="container">
-      {/* <h2>Task Name: {newItem.name} </h2>
-      <br /> */}
-
-      <Form onSubmit={handleSubmit}>
-        {/* <InputGroup controlId="formBasicEmail">
-          <Form.Label>Name</Form.Label>
-          <Form.Control
-            required
-            type="text"
-            // value={itemName}
-            onChange={(event) => {
-              setNewItem({ ...newItem, name: event.target.value });
-            }}
-          />
-        </InputGroup> */}
-
-        <InputGroup>
-          <Form.Label>Department</Form.Label>
-          <Form.Select
-            required
-            onChange={(event) => {
-              setNewItem({ ...newItem, department: event.target.value });
-            }}
-          >
-            <option>Choose your department</option>
-            <option value="Alfa">Alfa</option>
-            <option value="Bravo">Bravo</option>
-            <option value="Boost">Boost</option>
-          </Form.Select>
-        </InputGroup>
-
-        <Form.Group className="role_group">
-        <Form.Label>Role</Form.Label>
-        <div id="select-wrapper" className="select-wrapper">
-          <InputGroup className="role" id="role">
-
-              <Form.Select
-                id="roles"
-                required
-                aria-label="Default select example"
-                        onChange={(event) => {
-                    const newRole = [...newItem.role];
-                    newRole.push(event.target.value);
-                    console.log(newRole)
-                  setNewItem({ ...newItem, role: newRole});
-                }}
-              >
-                <option>Define</option>
-                <option value="Designer">Designer</option>
-                <option value="Developer">Developer</option>
-                <option value="PM">PM</option>
-              </Form.Select>
-           
-            <Form.Control id="number" required type="number" defaultValue={1} />
-      
-          </InputGroup>
-          </div>
-          <button className="addRole" onClick={addSelect}>
-            {" "}
-            + Add Role
-          </button>
-        </Form.Group>
-
-        <InputGroup>
-          <Form.Label>Date</Form.Label>
-          <Form.Control
-            required
-            type="date"
-            onChange={(event) => {
-              setNewItem({ ...newItem, date: event.target.value });
-            }}
-          />
-        </InputGroup>
-
-        <InputGroup>
-          <Form.Label>Shift</Form.Label>
-          <Form.Select
-            aria-label="Default select example"
-            required
-            onChange={(event) => {
-              console.log(event.target.value);
-              setNewItem({ ...newItem, shift: event.target.value });
-            }}
-          >
-            <option defaultValue value="Morning">
-              Morning
-            </option>
-            <option value="Evening">Evening</option>
-          </Form.Select>
-        </InputGroup>
-
-        <Button variant="primary" type="submit">
-          Find available employees
-        </Button>
-      </Form>
+      <Button onClick={generateEmployees}>Generate Employees</Button>
     </div>
   );
 }

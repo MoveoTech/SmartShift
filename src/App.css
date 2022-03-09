@@ -10,9 +10,17 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #191B32;
+  /* background-color: #191B32; */
 }
-.container, .container-sm {
+
+button {
+  width: auto;
+  padding-right: var(--bs-gutter-x,.75rem);
+  padding-left: var(--bs-gutter-x,.75rem);
+  margin-right: auto;
+  margin-left: auto;
+}
+/* .container, .container-sm {
     max-width: 65%;
 }
 .container > h2{
@@ -45,7 +53,7 @@ form {
   /* position: relative;
   display: flex;
   flex-wrap: wrap;
-  align-items: stretch; */
+  align-items: stretch; 
   width: 100%;
   border: 1px solid #E2E2E2;
   padding: 15px 15px 15px 15px; 
@@ -93,7 +101,7 @@ b{
   font-size: 14.0598px;
   background-color: #191B32;
   border: none;
-}
+} */
 /* #number{
   width: 40%;
 }
