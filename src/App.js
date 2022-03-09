@@ -25,9 +25,11 @@ fetch ("https://api.monday.com/v2", {
     console.log(res.data)
     employees = res.data.boards});
 
-const monday = mondaySdk();
-// monday.setToken('eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjE0OTQxMzU2NywidWlkIjoyNzY4NjQxMywiaWFkIjoiMjAyMi0wMy0wN1QxMzo1ODo1OC4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTEwMjMyOCwicmduIjoidXNlMSJ9.nv5EkOYruDh2KcuEH5ySf2Bb8kCnnZShfj0ouF6bm4Q')
-// monday.oauth({clientId:'171c7a6221dabf3951dc245aa5750e30'});
+    // const monday = mondaySdk();
+    // monday.listen("context", res =>{
+    
+    //     console.log(res.data.itemId)
+    // })
 
 function App() {
 

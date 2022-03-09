@@ -85,3 +85,16 @@ b{
   margin: auto 10px;
   font-size: 25px;
 }
+.addRole{
+  color: #fff;
+  font-size: 14.0598px;
+  background-color: #191B32;
+  border: none;
+}
+#number{
+  width: 40%;
+}
+.select-wrapper{
+  display: flex;
+  width: 75%;
+}
