@@ -52,6 +52,7 @@ function ManagerForm() {
     const graphqlQuery = {
       operationName: "fetchAuthor",
       query: `{boards(ids: ${board_id}) {groups {id title items (limit: 15) {id name column_values {id title text value}}}}}`,
+      variables: {},
     };
 
     const response = await axios({
@@ -67,15 +68,16 @@ function ManagerForm() {
           personId: item.column_values[0].value,
           name: item.column_values[0].text,
           date: item.column_values[1].text,
-          shift: item.column_values[2].text,
+          shift: item.column_values[2].text ===null? [] : item.column_values[2].text.replace(/\s/g,'').split(","),
+
         });
       });
     });
-
   };
 
   const mondayContext = () => {
     const monday = mondaySdk();
+    
     monday.listen("context", async (res) => {
       globalItemId = res.data.itemId;
       globalBoardId = res.data.boardId;
@@ -84,7 +86,6 @@ function ManagerForm() {
 
   const fetchShifts = async () => {
 
-    debugger;
     const graphqlQuery = {
       operationName: "fetchAuthor",
       query: `query{ boards(ids:${globalBoardId}){items (ids: ${globalItemId}) {id name column_values {id title text}}} }`,
@@ -105,78 +106,54 @@ function ManagerForm() {
         shift: item.column_values[3].text.split(","),
       };
     });
-    status();
+
   };
 
   const generateEmployees = async () => {
+
     let date = shifts.date;
-    let shift = shifts.shift[0];
-    let person = employeesAvail.filter(
-      (employee) => employee.date === date && employee.shift === shift
-    );
+    let shift = shifts.shift;
+
+    let person = employeesAvail.filter( (employee) => employee.date === date && employee.shift.some(r=> shift.indexOf(r) >= 0) );
+    console.log(person)
+
+    let employees=person.map(x=>{
+      let id = x.personId.substring(x.personId.indexOf("id") + 4);
+      const myArray = id.slice( 0, 8);
+      let obj={
+        id:myArray,
+      }
+      return obj
+    })
+    console.log(employees);
+    
     // console.log(person[0].personId)
     // let personId = person[0].personId;
     // let id = personId.substring(personId.indexOf("id") + 4);
     // const myArray = id.slice( 0, 8);
     // console.log(myArray); // gmail.com
 
-    // const graphqlQuery = JSON.stringify({
-    //   query:
-    //     "mutation ($myBoardId:Int!, $myItemId:Int!, $myColumnValues:JSON!) { change_multiple_column_values(item_id:$myItemId, board_id:$myBoardId, column_values: $myColumnValues) { id }}",
-    //   variables: JSON.stringify({
-    //     myBoardId: globalBoardId,
-    //     myItemId: globalItemId,
-    //     myColumnValues:
-    //       '{"person": {"personAndTeams": [{"id": 27595764, "kind": "person"}, {"id": 27595795, "kind": "person"}, {"id": 27595879, "kind": "person"}]}}',
-    //   }),
-    // });
+    
 
-    const mondayClient = mondaySdk();
+    const graphqlQuery = {
+      operationName: "fetchAuthor",
+      query:
+     ` mutation {
+        change_multiple_column_values(item_id:${globalItemId}, board_id:${globalBoardId}, column_values: "{\\\"person\\\" : {\\\"personsAndTeams\\\":[{\\\"id\\\" :${employees[0].id},\\\"kind\\\":\\\"person\\\"},{\\\"id\\\":${employees[1].id},\\\"kind\\\":\\\"person\\\"}]}}") {
+          id
+        }
+      }`,
+    };
 
-    const val = JSON.stringify({
-      person: JSON.stringify({
-        personAndTeams: [
-          {
-            id: "27595764",
-            kind: "person"
-          },
-          {
-            id: "27595795",
-            kind: "person"
-          }
-        ]
-      })
-    })
+    const response = await axios({
+      url: endpoint,
+      method: "post",
+      headers: headers,
+      data: graphqlQuery,
+    });
 
-    const res = await mondayClient.api(
-      `mutation { change_multiple_column_values(item_id:2393218204, board_id:2382298614, column_values: \"${val}\") { id }}`,
-      // {
-      //   variables: JSON.stringify({
-      //     myBoardId: globalBoardId,
-      //     myItemId: globalItemId,
-      //     myColumnValues:
-      //       '{"person": {"personAndTeams": [{"id": 27595764, "kind": "person"}, {"id": 27595795, "kind": "person"}, {"id": 27595879, "kind": "person"}]}}',
-      //   })
-      // }
-    )
 
-    // const response = await axios({
-    //   url: endpoint,
-    //   method: "post",
-    //   headers: headers,
-    //   body: JSON.stringify({
-    //     query:
-    //       "mutation ($myBoardId:Int!, $myItemId:Int!, $myColumnValues:JSON!) { change_multiple_column_values(item_id:$myItemId, board_id:$myBoardId, column_values: $myColumnValues) { id }}",
-    //     variables: JSON.stringify({
-    //       myBoardId: globalBoardId,
-    //       myItemId: globalItemId,
-    //       myColumnValues:
-    //         '{"person": {"personAndTeams": [{"id": 27595764, "kind": "person"}, {"id": 27595795, "kind": "person"}, {"id": 27595879, "kind": "person"}]}}',
-    //     }),
-    //   }),
-    // });
-
-    console.log(res.data);
+    status();
   };
 
   const status = async () => {
