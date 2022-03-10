@@ -126,20 +126,21 @@ function ManagerForm() {
       return obj
     })
     console.log(employees);
-    
-    // console.log(person[0].personId)
-    // let personId = person[0].personId;
-    // let id = personId.substring(personId.indexOf("id") + 4);
-    // const myArray = id.slice( 0, 8);
-    // console.log(myArray); // gmail.com
 
-    
+
+let employeesArr=[]
+
+ employees.forEach((employee, i)=>{
+  employeesArr.push(`{\\\"id\\\" :${employee.id},\\\"kind\\\":\\\"person\\\"}`)
+  
+})
+console.log(employeesArr.toString())
 
     const graphqlQuery = {
       operationName: "fetchAuthor",
       query:
      ` mutation {
-        change_multiple_column_values(item_id:${globalItemId}, board_id:${globalBoardId}, column_values: "{\\\"person\\\" : {\\\"personsAndTeams\\\":[{\\\"id\\\" :${employees[0].id},\\\"kind\\\":\\\"person\\\"},{\\\"id\\\":${employees[1].id},\\\"kind\\\":\\\"person\\\"}]}}") {
+        change_multiple_column_values(item_id:${globalItemId}, board_id:${globalBoardId}, column_values: "{\\\"person\\\" : {\\\"personsAndTeams\\\":[${employeesArr.toString()}]}}") {
           id
         }
       }`,
@@ -155,31 +156,29 @@ function ManagerForm() {
 
     status();
   };
+  
+
 
   const status = async () => {
-    console.log(shiftItemData);
-    let roles = [];
-    console.log(shiftItemData.boards[0].items);
+console.log(shiftItemData)
+    let availEmployees = [];
     shiftItemData.boards[0].items.map((item) => {
-      roles.push({
-        role:
+      availEmployees.push({
+        roles:
           item.column_values[1].text !== null
             ? item.column_values[1].text.split(",")
             : [],
-        shift:
+        employees:
           item.column_values[4].text !== ""
             ? item.column_values[4].text.split(",")
             : [],
       });
     });
+    console.log(availEmployees);
 
-    const endpoint = "https://api.monday.com/v2";
-    const headers = {
-      "content-type": "application/json",
-      Authorization: `${ACCESS_TOKEN}`,
-    };
-
-    if (roles[0].shift.length === 0) {
+    
+    if (availEmployees[0].employees.length === 0) {
+      console.log("none")
       const graphqlQuery = {
         operationName: "fetchAuthor",
         query:
@@ -201,7 +200,8 @@ function ManagerForm() {
       console.log(response);
     }
 
-    if (roles[0].role.length > roles[0].shift.length) {
+    else if (availEmployees[0].employees.length !==0 && availEmployees[0].roles.length > availEmployees[0].employees.length) {
+      console.log("partial")
       const graphqlQuery = {
         operationName: "fetchAuthor",
         query:
@@ -223,7 +223,8 @@ function ManagerForm() {
       console.log(response);
     }
 
-    if (roles[0].role.length === roles[0].shift.length) {
+   else if (availEmployees[0].roles.length === availEmployees[0].employees.length) {
+    console.log("complete")
       const graphqlQuery = {
         operationName: "fetchAuthor",
         query:
